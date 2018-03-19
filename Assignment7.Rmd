@@ -1,0 +1,162 @@
+---
+title: "DATA 607 - Assignment7 [Working with HTML, XML and JSON in R]"
+author: "Simon63"
+date: "March 18, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Working with books data in 3 formats {.tabset .tabset-fade}
+
+## HTML
+
+**Here's how a book with multiple authors looks like in HTML file**  
+
+![](C:/Users/simus/Documents/R/R Markdown/books-html.png)
+
+####Package Installs
+install.packages("tidyverse")  
+install.packages("XML")  
+
+```{r lib, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(XML)
+```
+
+```{r parse_html}
+path <- "https://raw.githubusercontent.com/simon63/Assignment7/master/books.html"
+download.file(path, destfile = "~/books.html")
+path <- file.path("books.html")
+booksHtml <- htmlParse(path)
+html_tb <- readHTMLTable(booksHtml, stringAsFactors = FALSE)
+```
+
+```{r view_df.html}
+df.html <- html_tb[[1]] %>% tbl_df()
+df.html
+```
+
+Viewing [HTML] data frame using **knir::kable** gives unexpected results  
+due to multiple authors for a book
+```{r view_as_kable}
+knitr::kable(df.html)
+```
+
+The multiple authors are separated by **"\\r\\n\\t\\t"** sequence
+```{r view_authors}
+as.vector(df.html$authors)
+```
+
+## XML
+**Here's how the books data looks like in XML file**  
+
+![](C:/Users/simus/Documents/R/R Markdown/books-xml.png)
+
+```{r parse_xml}
+path <- "https://raw.githubusercontent.com/simon63/Assignment7/master/books.xml"
+download.file(path, destfile = "~/books.xml")
+path <- file.path("books.xml")
+booksXML <- xmlParse(path)
+
+```
+
+Examining XML root's name, number of elements and the 1st element
+```{r view_xml_root}
+root <- xmlRoot(booksXML)
+xmlName(root)
+xmlSize(root)
+root[[1]]
+```
+
+View 1st Book XML element
+```{r view_book_1}
+root[["book"]]
+```
+
+View all Book elements
+```{r view_books}
+root["book"]
+```
+
+Trying **xmlToDataFrame** function  
+```{r try_xmlToDataFrame}
+df.xml <- xmlToDataFrame(root, stringsAsFactors = F) %>% tbl_df()
+df.xml
+```
+***Obervations:***  
+1.  There is a blank row for the Comment line in XML  
+2.  Multiple Authors are concatenated without any separation (unlike the HTML-parsing case)  
+3.  Structure (in terms of columns) is similar to the HTML-parsing case  
+
+
+## JSON
+**Here's how the books data looks like in JSON file**  
+
+![](C:/Users/simus/Documents/R/R Markdown/books-json.png)
+
+```{r lib_json, warning=FALSE, message=FALSE}
+library(RJSONIO)
+```
+
+Check if JSON file is valid
+```{r chk_json_file}
+path <- "https://raw.githubusercontent.com/simon63/Assignment7/master/books.json"
+download.file(path, destfile = "~/books.json")
+path <- file.path("books.json")
+isValidJSON(path)
+```
+Tryng **fromJSON()** function to parse the file
+```{r try_fromJSON}
+booksJSON <- fromJSON(content = path)
+class(booksJSON)
+glimpse(booksJSON)
+```
+
+Trying to use **unlist()** function and extracting the book titles
+```{r try_unlist}
+book.vec <- unlist(booksJSON, recursive = T, use.names = T)
+names(book.vec)
+book.vec[str_detect(names(book.vec), "title")]
+```
+***Note:*** The 4 Authors for book 1 got labeled as *"authors1", "authors2", "authors3", "authors4"*  
+
+Converting each JSON book class into separate data frames  
+using a combination of **lapply(), do.call() and rbind** functions  
+```{r try_lapply}
+do.call("rbind", lapply(booksJSON[[1]], data.frame, stringsAsFactors = F))
+do.call("rbind", lapply(booksJSON[[2]], data.frame, stringsAsFactors = F))
+do.call("rbind", lapply(booksJSON[[3]], data.frame, stringsAsFactors = F))
+```
+***Note:*** This provides 3 data frames with slightly different structures between each other
+
+
+Now trying **jsonlite** package
+####Package Installs
+install.packages("jsonlite")
+
+```{r lib_jsonlite, warning=FALSE, message=FALSE}
+library(jsonlite)
+```
+
+Tryng **fromJSON()** function to parse the file
+```{r try_fromJSON_lite, eval=FALSE}
+booksJSON <- fromJSON(txt = path)
+class(booksJSON)
+glimpse(booksJSON)
+```
+Got "Error in parse_con" as the parser failed interpret ISBN field value  
+![](C:/Users/simus/Documents/R/R Markdown/error-wk7.png)
+
+Trying with a different JSON file without the troubling ISBN value  
+```{r try_fromJSON_lite_2}
+path <- "https://raw.githubusercontent.com/simon63/Assignment7/master/books-fix.json"
+download.file(path, destfile = "~/books-fix.json")
+path <- file.path("books-fix.json")
+booksJSON <- fromJSON(txt = path)
+class(booksJSON)
+glimpse(booksJSON)
+```
+***Conclusion***  Using **jsonlite::fromJSON()** is convenient and gives a nice and expected data frame structure, **but** it seems to be very sensitive to and problematic with the textual representation of data values inside JSON files.
