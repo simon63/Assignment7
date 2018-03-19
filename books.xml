@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<favorite_books>
+  <!-- Favorite Computer Science Books -->
+  <book id="1">
+	<title>Design Patterns</title>
+	<authors>
+	  <author>Erich Gamma</author>
+	  <author>Richard Helm</author>
+	  <author>Ralph Johnson</author>
+	  <author>John Vlissides</author>
+	</authors>
+    <subject>Computer Science</subject>
+	<publisher>Addison-Wesley</publisher>
+	<ISBN-10>0-201-63361-2</ISBN-10>
+  </book>
+  <book id="2">
+	<title>Object-Oriented Design Heuristics</title>
+	<authors>
+	  <author>Arthur J. Riel</author>
+	</authors>
+    <subject>Computer Science</subject>
+	<publisher>Addison-Wesley</publisher>
+	<ISBN-10>0-201-63385-X</ISBN-10>
+	<ISBN-13></ISBN-13>
+  </book>
+  <book id="3">
+	<title>SQL Cookbook</title>
+	<authors>
+	  <author>Anthony Molinaro</author>
+	</authors>
+    <subject>Computer Science</subject>
+	<publisher>O'Reilly</publisher>
+	<ISBN-10>0596009763</ISBN-10>
+	<ISBN-13>978-0596009762</ISBN-13>
+  </book>
+</favorite_books>
